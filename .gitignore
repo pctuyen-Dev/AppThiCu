@@ -1,0 +1,13 @@
+# Build outputs & executables
+client/release/
+client/dist/
+*.exe
+*.dll
+*.pak
+*.asar
+*.db
+.codeatlas/
+
+# Dependencies & Logs
+node_modules/
+*.log

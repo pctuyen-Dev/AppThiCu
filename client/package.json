@@ -1,25 +1,55 @@
 {
-  "name": "client",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
-  },
-  "devDependencies": {
-    "@types/node": "^24.13.3",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.4",
-    "oxlint": "^1.75.0",
-    "typescript": "~6.0.2",
-    "vite": "^8.2.0"
-  }
+    "name":  "client",
+    "private":  true,
+    "version":  "2.3.1",
+    "main":  "electron/main.cjs",
+    "type":  "module",
+    "scripts":  {
+                    "dev":  "vite",
+                    "electron":  "electron .",
+                    "dev:electron":  "concurrently \"npm run dev\" \"wait-on http://localhost:5173 \u0026\u0026 npm run electron\"",
+                    "build":  "tsc -b \u0026\u0026 vite build",
+                    "build:exe":  "npm run build \u0026\u0026 electron-builder",
+                    "lint":  "oxlint",
+                    "preview":  "vite preview"
+                },
+    "dependencies":  {
+                         "react":  "^19.2.8",
+                         "react-dom":  "^19.2.8"
+                     },
+    "devDependencies":  {
+                            "@types/node":  "^24.13.3",
+                            "@types/react":  "^19.2.17",
+                            "@types/react-dom":  "^19.2.3",
+                            "@vitejs/plugin-react":  "^6.0.4",
+                            "concurrently":  "^10.0.5",
+                            "electron":  "^43.4.1",
+                            "electron-builder":  "^26.15.3",
+                            "oxlint":  "^1.75.0",
+                            "typescript":  "~6.0.2",
+                            "vite":  "^8.2.0",
+                            "wait-on":  "^9.1.0"
+                        },
+    "build":  {
+                  "appId":  "vn.uneti.examapp",
+                  "productName":  "UNETI Exam",
+                  "directories":  {
+                                      "output":  "release"
+                                  },
+                  "files":  [
+                                "dist/**/*",
+                                "electron/**/*",
+                                "package.json"
+                            ],
+                  "win":  {
+                              "target":  "nsis",
+                              "artifactName":  "${productName}-Setup-${version}.${ext}"
+                          },
+                  "nsis":  {
+                               "oneClick":  false,
+                               "allowToChangeInstallationDirectory":  true,
+                               "createDesktopShortcut":  true,
+                               "createStartMenuShortcut":  true
+                           }
+              }
 }
