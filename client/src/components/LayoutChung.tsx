@@ -73,6 +73,7 @@ export const LayoutChung: React.FC<LayoutChungProps> = ({
   const [hienThiMenuNguoiDung, setHienThiMenuNguoiDung] = useState<boolean>(false);
   const [hienThiMenuThongBao, setHienThiMenuThongBao] = useState<boolean>(false);
   const [menuThiCuMo, setMenuThiCuMo] = useState<boolean>(true);
+  const [menuChamBaiMo, setMenuChamBaiMo] = useState<boolean>(true);
 
   // Danh mục Menu theo vai trò
   const layDanhSachMenu = (vaiTro: VaiTroNguoiDung) => {
@@ -106,19 +107,20 @@ export const LayoutChung: React.FC<LayoutChungProps> = ({
   const danhSachMenu = layDanhSachMenu(nguoiDungHienTai.vaiTro);
 
   const layTieuDeManHinh = () => {
+    if (manHinhHienTai === 'teacher-grading-archive') return 'Kho bài nộp';
+    if (manHinhHienTai === 'teacher-grading-appeals') return 'Phúc khảo';
     if (manHinhHienTai === 'teacher-exams-list' || manHinhHienTai === 'teacher-exams' || manHinhHienTai === 'teacher-exams-create-exam') return 'Bài kiểm tra';
     if (manHinhHienTai === 'teacher-rooms-list' || manHinhHienTai === 'teacher-exams-create-room') return 'Phòng thi';
     const itemMenu = danhSachMenu.find((m) => m.id === manHinhHienTai);
     if (itemMenu) return itemMenu.ten;
     if (manHinhHienTai === 'teacher-monitoring') return 'Giám sát phòng thi';
+    if (manHinhHienTai === 'teacher-waiting-room') return 'Phòng chờ thi';
     if (manHinhHienTai === 'student-waiting') return 'Phòng chờ thi';
     if (manHinhHienTai === 'student-taking-exam') return 'Giao diện làm bài';
     return 'UNETI EXAM';
   };
 
-  const laManHinhTapTrung =
-    manHinhHienTai === 'teacher-monitoring' ||
-    manHinhHienTai === 'student-taking-exam';
+  const laManHinhTapTrung = manHinhHienTai === 'student-taking-exam';
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-app)' }}>
@@ -198,7 +200,11 @@ export const LayoutChung: React.FC<LayoutChungProps> = ({
               {danhSachMenu.map((item) => {
                 const IconComponent = item.icon;
                 const laThiCu = item.id === 'teacher-exams';
-                const dangActive = manHinhHienTai === item.id || (laThiCu && manHinhHienTai.startsWith('teacher-exams'));
+                const laChamBai = item.id === 'teacher-grading';
+                const dangActive =
+                  manHinhHienTai === item.id ||
+                  (laThiCu && (manHinhHienTai.startsWith('teacher-exams') || manHinhHienTai === 'teacher-rooms-list' || manHinhHienTai === 'teacher-waiting-room' || manHinhHienTai === 'teacher-monitoring')) ||
+                  (laChamBai && manHinhHienTai.startsWith('teacher-grading'));
 
                 return (
                   <React.Fragment key={item.id}>
@@ -207,6 +213,7 @@ export const LayoutChung: React.FC<LayoutChungProps> = ({
                       onClick={() => {
                         onChuyenManHinh(item.id);
                         if (laThiCu) setMenuThiCuMo(!menuThiCuMo);
+                        if (laChamBai) setMenuChamBaiMo(!menuChamBaiMo);
                       }}
                       style={{
                         width: '100%',
@@ -244,6 +251,9 @@ export const LayoutChung: React.FC<LayoutChungProps> = ({
 
                       {laThiCu && !sidebarThuNho && (
                         menuThiCuMo ? <ChevronDown size={16} /> : <ChevronRight size={16} />
+                      )}
+                      {laChamBai && !sidebarThuNho && (
+                        menuChamBaiMo ? <ChevronDown size={16} /> : <ChevronRight size={16} />
                       )}
                     </button>
 
@@ -386,6 +396,323 @@ export const LayoutChung: React.FC<LayoutChungProps> = ({
                               }}
                             />
                             Phòng thi
+                          </button>
+                        </div>
+
+                        {/* Nhánh cây 3: Phòng chờ thi (Phê duyệt) */}
+                        <div style={{ position: 'relative' }}>
+                          <div
+                            style={{
+                              position: 'absolute',
+                              left: '-13px',
+                              top: '50%',
+                              width: '10px',
+                              height: '2px',
+                              backgroundColor:
+                                manHinhHienTai === 'teacher-waiting-room'
+                                  ? 'var(--warning)'
+                                  : 'var(--border-color)',
+                              transform: 'translateY(-50%)',
+                              transition: 'all var(--transition-fast)'
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => onChuyenManHinh('teacher-waiting-room')}
+                            style={{
+                              width: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              padding: '8px 12px',
+                              border: 'none',
+                              borderRadius: '8px',
+                              backgroundColor:
+                                manHinhHienTai === 'teacher-waiting-room' ? '#fef3c7' : 'transparent',
+                              color:
+                                manHinhHienTai === 'teacher-waiting-room' ? '#b45309' : 'var(--text-secondary)',
+                              fontSize: '13px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                              transition: 'all var(--transition-fast)'
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: '7px',
+                                height: '7px',
+                                borderRadius: '50%',
+                                backgroundColor:
+                                  manHinhHienTai === 'teacher-waiting-room' ? '#d97706' : 'var(--text-tertiary)',
+                                flexShrink: 0,
+                                transition: 'all var(--transition-fast)'
+                              }}
+                            />
+                            Phòng chờ thi
+                          </button>
+                        </div>
+
+                        {/* Nhánh cây 4: Giám sát thi */}
+                        <div style={{ position: 'relative' }}>
+                          {/* Đường nối ngang nhánh cây 4 (Branch line) */}
+                          <div
+                            style={{
+                              position: 'absolute',
+                              left: '-13px',
+                              top: '50%',
+                              width: '10px',
+                              height: '2px',
+                              backgroundColor:
+                                manHinhHienTai === 'teacher-monitoring'
+                                  ? 'var(--warning)'
+                                  : 'var(--border-color)',
+                              transform: 'translateY(-50%)',
+                              transition: 'all var(--transition-fast)'
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => onChuyenManHinh('teacher-monitoring')}
+                            style={{
+                              width: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              padding: '8px 12px',
+                              border: 'none',
+                              borderRadius: '8px',
+                              backgroundColor:
+                                manHinhHienTai === 'teacher-monitoring' ? 'var(--warning-light)' : 'transparent',
+                              color:
+                                manHinhHienTai === 'teacher-monitoring' ? 'var(--warning)' : 'var(--text-secondary)',
+                              fontSize: '13px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                              transition: 'all var(--transition-fast)'
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: '7px',
+                                height: '7px',
+                                borderRadius: '50%',
+                                backgroundColor:
+                                  manHinhHienTai === 'teacher-monitoring' ? 'var(--warning)' : 'var(--text-tertiary)',
+                                flexShrink: 0,
+                                transition: 'all var(--transition-fast)'
+                              }}
+                            />
+                            Giám sát thi
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 3 LỰA CHỌN HIỆN NGAY DƯỚI CHẤM BÀI VỚI CẤU TRÚC CÂY (TREE-VIEW) */}
+                    {laChamBai && menuChamBaiMo && !sidebarThuNho && (
+                      <div
+                        style={{
+                          position: 'relative',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '6px',
+                          paddingLeft: '36px',
+                          marginTop: '4px',
+                          marginBottom: '8px'
+                        }}
+                      >
+                        {/* Thân cây dọc (Vertical Tree Trunk Line) */}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            left: '23px',
+                            top: '-4px',
+                            bottom: '18px',
+                            width: '2px',
+                            backgroundColor: 'var(--border-color)',
+                            borderRadius: '1px'
+                          }}
+                        />
+
+                        {/* Nhánh cây 1: Kho bài nộp */}
+                        <div style={{ position: 'relative' }}>
+                          <div
+                            style={{
+                              position: 'absolute',
+                              left: '-13px',
+                              top: '50%',
+                              width: '10px',
+                              height: '2px',
+                              backgroundColor:
+                                manHinhHienTai === 'teacher-grading-archive'
+                                  ? 'var(--primary)'
+                                  : 'var(--border-color)',
+                              transform: 'translateY(-50%)',
+                              transition: 'all var(--transition-fast)'
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => onChuyenManHinh('teacher-grading-archive')}
+                            style={{
+                              width: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              padding: '8px 12px',
+                              border: 'none',
+                              borderRadius: '8px',
+                              backgroundColor:
+                                manHinhHienTai === 'teacher-grading-archive'
+                                  ? 'var(--primary-light)'
+                                  : 'transparent',
+                              color:
+                                manHinhHienTai === 'teacher-grading-archive'
+                                  ? 'var(--primary)'
+                                  : 'var(--text-secondary)',
+                              fontSize: '13px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                              transition: 'all var(--transition-fast)'
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: '7px',
+                                height: '7px',
+                                borderRadius: '50%',
+                                backgroundColor:
+                                  manHinhHienTai === 'teacher-grading-archive'
+                                    ? 'var(--primary)'
+                                    : 'var(--text-tertiary)',
+                                flexShrink: 0,
+                                transition: 'all var(--transition-fast)'
+                              }}
+                            />
+                            Kho bài nộp
+                          </button>
+                        </div>
+
+                        {/* Nhánh cây 2: Chấm điểm */}
+                        <div style={{ position: 'relative' }}>
+                          <div
+                            style={{
+                              position: 'absolute',
+                              left: '-13px',
+                              top: '50%',
+                              width: '10px',
+                              height: '2px',
+                              backgroundColor:
+                                manHinhHienTai === 'teacher-grading'
+                                  ? 'var(--primary)'
+                                  : 'var(--border-color)',
+                              transform: 'translateY(-50%)',
+                              transition: 'all var(--transition-fast)'
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => onChuyenManHinh('teacher-grading')}
+                            style={{
+                              width: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              padding: '8px 12px',
+                              border: 'none',
+                              borderRadius: '8px',
+                              backgroundColor:
+                                manHinhHienTai === 'teacher-grading'
+                                  ? 'var(--primary-light)'
+                                  : 'transparent',
+                              color:
+                                manHinhHienTai === 'teacher-grading'
+                                  ? 'var(--primary)'
+                                  : 'var(--text-secondary)',
+                              fontSize: '13px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                              transition: 'all var(--transition-fast)'
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: '7px',
+                                height: '7px',
+                                borderRadius: '50%',
+                                backgroundColor:
+                                  manHinhHienTai === 'teacher-grading'
+                                    ? 'var(--primary)'
+                                    : 'var(--text-tertiary)',
+                                flexShrink: 0,
+                                transition: 'all var(--transition-fast)'
+                              }}
+                            />
+                            Chấm điểm
+                          </button>
+                        </div>
+
+                        {/* Nhánh cây 3: Phúc khảo */}
+                        <div style={{ position: 'relative' }}>
+                          <div
+                            style={{
+                              position: 'absolute',
+                              left: '-13px',
+                              top: '50%',
+                              width: '10px',
+                              height: '2px',
+                              backgroundColor:
+                                manHinhHienTai === 'teacher-grading-appeals'
+                                  ? 'var(--primary)'
+                                  : 'var(--border-color)',
+                              transform: 'translateY(-50%)',
+                              transition: 'all var(--transition-fast)'
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => onChuyenManHinh('teacher-grading-appeals')}
+                            style={{
+                              width: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              padding: '8px 12px',
+                              border: 'none',
+                              borderRadius: '8px',
+                              backgroundColor:
+                                manHinhHienTai === 'teacher-grading-appeals'
+                                  ? 'var(--primary-light)'
+                                  : 'transparent',
+                              color:
+                                manHinhHienTai === 'teacher-grading-appeals'
+                                  ? 'var(--primary)'
+                                  : 'var(--text-secondary)',
+                              fontSize: '13px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                              transition: 'all var(--transition-fast)'
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: '7px',
+                                height: '7px',
+                                borderRadius: '50%',
+                                backgroundColor:
+                                  manHinhHienTai === 'teacher-grading-appeals'
+                                    ? 'var(--primary)'
+                                    : 'var(--text-tertiary)',
+                                flexShrink: 0,
+                                transition: 'all var(--transition-fast)'
+                              }}
+                            />
+                            Phúc khảo
                           </button>
                         </div>
                       </div>

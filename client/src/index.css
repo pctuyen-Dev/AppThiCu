@@ -53,38 +53,38 @@
   --transition-normal: 220ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* DARK MODE PALETTE - NEUTRAL DARK GRAY WITH SOFT ACCENTS */
+/* DARK MODE PALETTE - SOFT SLATE GRAY (XÁM NHẸ NHÀNG, DỊU MẮT) */
 .dark {
-  --bg-app: #121214;
-  --bg-sidebar: #09090B;
-  --bg-header: #18181B;
-  --bg-surface: #1F1F23;
-  --bg-surface-subtle: #18181B;
-  --bg-hover: #2E2E33;
+  --bg-app: #1e293b;
+  --bg-sidebar: #0f172a;
+  --bg-header: #1e293b;
+  --bg-surface: #334155;
+  --bg-surface-subtle: #1e293b;
+  --bg-hover: #475569;
   
-  --primary: #38BDF8;
-  --primary-hover: #7DD3FC;
-  --primary-light: rgba(56, 189, 248, 0.12);
-  --primary-subtle: rgba(56, 189, 248, 0.06);
+  --primary: #38bdf8;
+  --primary-hover: #7dd3fc;
+  --primary-light: rgba(56, 189, 248, 0.15);
+  --primary-subtle: rgba(56, 189, 248, 0.08);
   
-  --text-primary: #F4F4F5;
-  --text-secondary: #A1A1AA;
-  --text-tertiary: #71717A;
-  --text-on-primary: #09090B;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-on-primary: #0f172a;
   
-  --border-color: #2F2F35;
-  --border-subtle: #222226;
+  --border-color: #475569;
+  --border-subtle: #334155;
   
-  --danger: #F87171;
-  --danger-light: rgba(239, 68, 68, 0.12);
-  --success: #34D399;
-  --success-light: rgba(16, 185, 129, 0.12);
-  --warning: #FBBF24;
-  --warning-light: rgba(245, 158, 11, 0.12);
+  --danger: #f87171;
+  --danger-light: rgba(239, 68, 68, 0.15);
+  --success: #34d399;
+  --success-light: rgba(16, 185, 129, 0.15);
+  --warning: #fbbf24;
+  --warning-light: rgba(245, 158, 11, 0.15);
 
   --shadow-sm: none;
-  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.3);
 }
 
 * {
@@ -294,4 +294,14 @@ body {
 .badge-neutral {
   background-color: var(--bg-surface-subtle);
   color: var(--text-secondary);
+}
+
+/* Hide number input spin buttons */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
 }

@@ -18,7 +18,10 @@ import {
   Square,
   Lock,
   Unlock,
-  RotateCcw
+  RotateCcw,
+  MoreVertical,
+  Search,
+  Filter
 } from 'lucide-react';
 import type { BaiKiemTra, PhongThi, LoaiBaiKiemTra, NguoiDung } from '../../types/BoThuVienTypes';
 import {
@@ -36,6 +39,7 @@ interface QuanLyThiCuProps {
   onMoPhongThi?: (phongThiId: string) => void;
   onXoaPhongThi?: (phongThiId: string) => void;
   onChuyenToiGiamSat: (phongThiId: string) => void;
+  onChuyenToiPhongCho?: (phongThiId: string) => void;
   onHienThiToast: (tieuDe: string, noiDung: string, loai: 'success' | 'warning' | 'error' | 'info') => void;
   modeMoModalBanDau?: 'TAO_BAI' | 'TAO_PHONG' | null;
   tabBanDau?: 'BAI_KIEM_TRA' | 'PHONG_THI';
@@ -49,6 +53,7 @@ export const QuanLyThiCu: React.FC<QuanLyThiCuProps> = ({
   onTaoPhongThi,
   onXoaPhongThi,
   onChuyenToiGiamSat,
+  onChuyenToiPhongCho,
   onHienThiToast,
   modeMoModalBanDau,
   tabBanDau = 'BAI_KIEM_TRA'
@@ -118,6 +123,7 @@ export const QuanLyThiCu: React.FC<QuanLyThiCuProps> = ({
   const [tronCauHoiPhong, setTronCauHoiPhong] = useState<boolean>(true);
   const [tronDapAnPhong, setTronDapAnPhong] = useState<boolean>(true);
   const [choXemDiemPhong, setChoXemDiemPhong] = useState<boolean>(true);
+  const [cheDoDuyetPhong, setCheDoDuyetPhong] = useState<'TU_DONG' | 'THU_CONG'>('THU_CONG');
 
   const [danhSachSVDaChon] = useState<string[]>(danhSachSinhVien.map((s) => s.maDinhDanh));
   const kiemTraMaValid = kiemTraMaPhongHopLe(maPhongForm);
@@ -127,10 +133,26 @@ export const QuanLyThiCu: React.FC<QuanLyThiCuProps> = ({
   // ------------------------------------------------------------
   const [danhSachPhongThiLocal, setDanhSachPhongThiLocal] = useState<PhongThi[]>(danhSachPhongThi);
   const [danhSachPhongDaChon, setDanhSachPhongDaChon] = useState<string[]>([]);
+  
+  // State Tìm kiếm & Lọc trạng thái phòng thi
+  const [tuKhoaTimKiemPhong, setTuKhoaTimKiemPhong] = useState<string>('');
+  const [locTrangThaiPhong, setLocTrangThaiPhong] = useState<'TAT_CA' | 'CHO_BAT_DAU' | 'DANG_THI' | 'TAM_DUNG' | 'KHOA' | 'DA_KET_THUC'>('TAT_CA');
+  
+  // State quản lý Menu 3 chấm (dấu ...) đang mở ở dòng nào
+  const [openMenuPhongId, setOpenMenuPhongId] = useState<string | null>(null);
 
   React.useEffect(() => {
     setDanhSachPhongThiLocal(danhSachPhongThi);
   }, [danhSachPhongThi]);
+
+  // Đóng menu 3 chấm khi click bên ngoài
+  React.useEffect(() => {
+    const handleClickOutside = () => {
+      setOpenMenuPhongId(null);
+    };
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, []);
 
   // Modal Sửa Phòng Thi State
   const [hienThiModalSuaPhong, setHienThiModalSuaPhong] = useState<boolean>(false);
@@ -167,6 +189,24 @@ export const QuanLyThiCu: React.FC<QuanLyThiCuProps> = ({
       'success'
     );
     setDanhSachPhongDaChon([]);
+  };
+
+  // Nút hợp nhất 1 nút: Mở / Khóa phòng hàng loạt (Nếu có phòng đang khóa thì mở hết, ngược lại khóa hết)
+  const xuLyToggleKhoaMoHangLoat = () => {
+    if (danhSachPhongDaChon.length === 0) return;
+    const cacPhongChon = danhSachPhongThiLocal.filter((p) => danhSachPhongDaChon.includes(p.id));
+    const coPhongDangKhoa = cacPhongChon.some((p) => p.trangThai === 'KHOA');
+    const trangThaiMoi = coPhongDangKhoa ? 'CHO_BAT_DAU' : 'KHOA';
+    xuLyCapNhatTrangThaiHangLoat(trangThaiMoi);
+  };
+
+  // Nút hợp nhất 1 nút: Tạm dừng / Tiếp tục thi hàng loạt (Nếu có phòng tạm dừng thì tiếp tục, ngược lại tạm dừng)
+  const xuLyToggleTamDungTiepTucHangLoat = () => {
+    if (danhSachPhongDaChon.length === 0) return;
+    const cacPhongChon = danhSachPhongThiLocal.filter((p) => danhSachPhongDaChon.includes(p.id));
+    const coPhongTamDung = cacPhongChon.some((p) => p.trangThai === 'TAM_DUNG');
+    const trangThaiMoi = coPhongTamDung ? 'DANG_THI' : 'TAM_DUNG';
+    xuLyCapNhatTrangThaiHangLoat(trangThaiMoi);
   };
 
   // Xóa đơn lẻ 1 phòng thi
@@ -301,6 +341,7 @@ export const QuanLyThiCu: React.FC<QuanLyThiCuProps> = ({
       tronDapAn: tronDapAnPhong,
       choXemDiem: choXemDiemPhong,
       phamViThi: phamViThiForm,
+      cheDoDuyet: cheDoDuyetPhong,
       danhSachSinhVien: danhSachSinhVien.map((sv) => ({
         maSinhVien: sv.maDinhDanh,
         hoTen: sv.hoTen,
@@ -308,6 +349,7 @@ export const QuanLyThiCu: React.FC<QuanLyThiCuProps> = ({
         khoa: sv.khoa,
         trangThaiKetNoi: 'OFFLINE',
         trangThaiLamBai: 'CHUA_VAO',
+        trangThaiDuyet: cheDoDuyetPhong === 'TU_DONG' ? 'DA_DUYET' : 'CHO_DUYET',
         soCauDaLam: 0,
         tongSoCau: 40,
         thoiGianConLaiSeconds: (thoiLuongPhongForm || baiKiemTraChon.thoiLuongPhut) * 60,
@@ -324,6 +366,21 @@ export const QuanLyThiCu: React.FC<QuanLyThiCuProps> = ({
   const danhSachBaiLoc = danhSachBaiKiemTra.filter((b) => {
     if (locLoaiBai === 'TRAC_NGHIEM') return b.loai === 'TRAC_NGHIEM';
     if (locLoaiBai === 'TU_LUAN') return b.loai === 'TU_LUAN';
+    return true;
+  });
+
+  // Filter Phòng Thi theo Từ khóa tìm kiếm (Mã phòng, Tên phòng, Tên đề) & Trạng thái phòng
+  const danhSachPhongDaLoc = danhSachPhongThiLocal.filter((p) => {
+    if (locTrangThaiPhong !== 'TAT_CA' && p.trangThai !== locTrangThaiPhong) {
+      return false;
+    }
+    if (tuKhoaTimKiemPhong.trim() !== '') {
+      const tk = tuKhoaTimKiemPhong.toLowerCase().trim();
+      const maMatch = (p.maPhong || '').toLowerCase().includes(tk);
+      const tenMatch = (p.tenPhong || '').toLowerCase().includes(tk);
+      const deMatch = (p.tenBaiKiemTra || '').toLowerCase().includes(tk);
+      return maMatch || tenMatch || deMatch;
+    }
     return true;
   });
 
@@ -553,83 +610,196 @@ export const QuanLyThiCu: React.FC<QuanLyThiCuProps> = ({
       {tabHienTai === 'PHONG_THI' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           
-          {/* BAR THAO TÁC HÀNG LOẠT KHI TÍCH CHỌN NHIỀU PHÒNG */}
-          {danhSachPhongDaChon.length > 0 && (
-            <div
-              style={{
-                backgroundColor: 'var(--primary-light)',
-                border: '1px solid var(--primary)',
-                borderRadius: '14px',
-                padding: '12px 20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '16px',
-                boxShadow: 'var(--shadow-sm)'
-              }}
-            >
-              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--primary)' }}>
-                ☑ Đã chọn <b>{danhSachPhongDaChon.length}</b> phòng thi
-              </span>
+          {/* BAR THANH TÌM KIẾM, LỌC TRẠNG THÁI & THAO TÁC HÀNG LOẠT (LUÔN HIỂN THỊ) */}
+          <div
+            style={{
+              backgroundColor: 'var(--bg-surface)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '16px',
+              padding: '14px 20px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              boxShadow: 'var(--shadow-sm)'
+            }}
+          >
+            {/* Trái: Tìm kiếm theo Mã phòng, Tên phòng, Đề thi & Lọc trạng thái */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '320px' }}>
+              <div style={{ position: 'relative', flex: 1, maxWidth: '380px' }}>
+                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm theo mã phòng, tên phòng, đề thi..."
+                  value={tuKhoaTimKiemPhong}
+                  onChange={(e) => setTuKhoaTimKiemPhong(e.target.value)}
+                  className="input-custom"
+                  style={{ paddingLeft: '36px', height: '38px', fontSize: '13px', width: '100%' }}
+                />
+                {tuKhoaTimKiemPhong && (
+                  <X
+                    size={14}
+                    onClick={() => setTuKhoaTimKiemPhong('')}
+                    style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'var(--text-tertiary)' }}
+                  />
+                )}
+              </div>
 
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  onClick={() => xuLyCapNhatTrangThaiHangLoat('CHO_BAT_DAU')}
-                  style={{ padding: '6px 12px', fontSize: '12.5px', fontWeight: 700, borderRadius: '8px', border: 'none', backgroundColor: '#fff', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Filter size={16} style={{ color: 'var(--text-secondary)' }} />
+                <select
+                  value={locTrangThaiPhong}
+                  onChange={(e) => setLocTrangThaiPhong(e.target.value as any)}
+                  className="input-custom"
+                  style={{ height: '38px', fontSize: '13px', padding: '0 10px', cursor: 'pointer', fontWeight: 600 }}
                 >
-                  <Unlock size={14} /> Mở phòng
-                </button>
-                <button
-                  type="button"
-                  onClick={() => xuLyCapNhatTrangThaiHangLoat('KHOA')}
-                  style={{ padding: '6px 12px', fontSize: '12.5px', fontWeight: 700, borderRadius: '8px', border: 'none', backgroundColor: '#fff', color: 'var(--danger)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                >
-                  <Lock size={14} /> Khóa phòng
-                </button>
-                <button
-                  type="button"
-                  onClick={() => xuLyCapNhatTrangThaiHangLoat('DANG_THI')}
-                  style={{ padding: '6px 12px', fontSize: '12.5px', fontWeight: 700, borderRadius: '8px', border: 'none', backgroundColor: 'var(--success)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                >
-                  <Play size={14} /> Bắt đầu thi
-                </button>
-                <button
-                  type="button"
-                  onClick={() => xuLyCapNhatTrangThaiHangLoat('TAM_DUNG')}
-                  style={{ padding: '6px 12px', fontSize: '12.5px', fontWeight: 700, borderRadius: '8px', border: 'none', backgroundColor: '#fff', color: 'var(--warning)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                >
-                  <Pause size={14} /> Tạm dừng
-                </button>
-                <button
-                  type="button"
-                  onClick={() => xuLyCapNhatTrangThaiHangLoat('DA_KET_THUC')}
-                  style={{ padding: '6px 12px', fontSize: '12.5px', fontWeight: 700, borderRadius: '8px', border: 'none', backgroundColor: '#fff', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                >
-                  <Square size={14} /> Kết thúc thi
-                </button>
+                  <option value="TAT_CA">Tất cả trạng thái ({danhSachPhongThiLocal.length})</option>
+                  <option value="CHO_BAT_DAU">Chờ bắt đầu</option>
+                  <option value="DANG_THI">Đang thi</option>
+                  <option value="TAM_DUNG">Tạm dừng</option>
+                  <option value="KHOA">Đã khóa</option>
+                  <option value="DA_KET_THUC">Đã kết thúc</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Phải: Nút Thao tác (Mở/Khóa 1 nút, Tạm dừng/Tiếp tục 1 nút, Bắt đầu, Kết thúc, Xóa) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              {danhSachPhongDaChon.length > 0 && (
+                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--primary)', paddingRight: '4px' }}>
+                  ☑ Đã chọn <b>{danhSachPhongDaChon.length}</b> phòng:
+                </span>
+              )}
+
+              {/* Nút 1: Mở / Khóa phòng (Single Toggle Button) */}
+              <button
+                type="button"
+                disabled={danhSachPhongDaChon.length === 0}
+                onClick={xuLyToggleKhoaMoHangLoat}
+                title="Mở phòng / Khóa phòng"
+                style={{
+                  padding: '7px 12px',
+                  fontSize: '12.5px',
+                  fontWeight: 700,
+                  borderRadius: '10px',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: danhSachPhongDaChon.length > 0 ? 'var(--bg-surface-subtle)' : 'var(--bg-disabled)',
+                  color: danhSachPhongDaChon.length > 0 ? 'var(--primary)' : 'var(--text-tertiary)',
+                  cursor: danhSachPhongDaChon.length > 0 ? 'pointer' : 'not-allowed',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  transition: 'all var(--transition-fast)'
+                }}
+              >
+                <Lock size={14} /> Mở / Khóa phòng
+              </button>
+
+              {/* Nút 2: Tạm dừng / Tiếp tục (Single Toggle Button) */}
+              <button
+                type="button"
+                disabled={danhSachPhongDaChon.length === 0}
+                onClick={xuLyToggleTamDungTiepTucHangLoat}
+                title="Tạm dừng / Tiếp tục thi"
+                style={{
+                  padding: '7px 12px',
+                  fontSize: '12.5px',
+                  fontWeight: 700,
+                  borderRadius: '10px',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: danhSachPhongDaChon.length > 0 ? 'var(--bg-surface-subtle)' : 'var(--bg-disabled)',
+                  color: danhSachPhongDaChon.length > 0 ? 'var(--warning)' : 'var(--text-tertiary)',
+                  cursor: danhSachPhongDaChon.length > 0 ? 'pointer' : 'not-allowed',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  transition: 'all var(--transition-fast)'
+                }}
+              >
+                <Pause size={14} /> Tạm dừng / Tiếp tục
+              </button>
+
+              {/* Nút 3: Bắt đầu thi */}
+              <button
+                type="button"
+                disabled={danhSachPhongDaChon.length === 0}
+                onClick={() => xuLyCapNhatTrangThaiHangLoat('DANG_THI')}
+                style={{
+                  padding: '7px 12px',
+                  fontSize: '12.5px',
+                  fontWeight: 700,
+                  borderRadius: '10px',
+                  border: 'none',
+                  backgroundColor: danhSachPhongDaChon.length > 0 ? 'var(--success)' : 'var(--bg-disabled)',
+                  color: danhSachPhongDaChon.length > 0 ? '#fff' : 'var(--text-tertiary)',
+                  cursor: danhSachPhongDaChon.length > 0 ? 'pointer' : 'not-allowed',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}
+              >
+                <Play size={14} /> Bắt đầu thi
+              </button>
+
+              {/* Nút 4: Kết thúc thi */}
+              <button
+                type="button"
+                disabled={danhSachPhongDaChon.length === 0}
+                onClick={() => xuLyCapNhatTrangThaiHangLoat('DA_KET_THUC')}
+                style={{
+                  padding: '7px 12px',
+                  fontSize: '12.5px',
+                  fontWeight: 700,
+                  borderRadius: '10px',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: danhSachPhongDaChon.length > 0 ? 'var(--bg-surface)' : 'var(--bg-disabled)',
+                  color: danhSachPhongDaChon.length > 0 ? 'var(--text-secondary)' : 'var(--text-tertiary)',
+                  cursor: danhSachPhongDaChon.length > 0 ? 'pointer' : 'not-allowed',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}
+              >
+                <Square size={14} /> Kết thúc thi
+              </button>
+
+              {/* Nút 5: Xóa */}
+              {danhSachPhongDaChon.length > 0 && (
                 <button
                   type="button"
                   onClick={xuLyXoaHangLoat}
-                  style={{ padding: '6px 12px', fontSize: '12.5px', fontWeight: 700, borderRadius: '8px', border: 'none', backgroundColor: 'var(--danger)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  style={{
+                    padding: '7px 12px',
+                    fontSize: '12.5px',
+                    fontWeight: 700,
+                    borderRadius: '10px',
+                    border: 'none',
+                    backgroundColor: 'var(--danger)',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}
                 >
-                  <Trash2 size={14} /> Xóa các phòng chọn
+                  <Trash2 size={14} /> Xóa ({danhSachPhongDaChon.length})
                 </button>
-              </div>
+              )}
             </div>
-          )}
+          </div>
 
-          {/* BẢNG PHÒNG THI VỚI CHECKBOX & CÁC NÚT ĐIỀU KHIỂN */}
-          <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '16px', overflow: 'hidden' }}>
+          {/* BẢNG PHÒNG THI VỚI MENU 3 CHẤM GỌN GÀNG */}
+          <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '16px', overflow: 'visible' }}>
             <thead>
               <tr style={{ backgroundColor: 'var(--bg-surface-subtle)', height: '46px', borderBottom: '1px solid var(--border-color)' }}>
                 <th style={{ padding: '0 16px', width: '40px', textAlign: 'center' }}>
                   <input
                     type="checkbox"
-                    checked={danhSachPhongThiLocal.length > 0 && danhSachPhongDaChon.length === danhSachPhongThiLocal.length}
+                    checked={danhSachPhongDaLoc.length > 0 && danhSachPhongDaChon.length === danhSachPhongDaLoc.length}
                     onChange={(e) => {
                       if (e.target.checked) {
-                        setDanhSachPhongDaChon(danhSachPhongThiLocal.map((p) => p.id));
+                        setDanhSachPhongDaChon(danhSachPhongDaLoc.map((p) => p.id));
                       } else {
                         setDanhSachPhongDaChon([]);
                       }
@@ -645,174 +815,365 @@ export const QuanLyThiCu: React.FC<QuanLyThiCuProps> = ({
               </tr>
             </thead>
             <tbody>
-              {danhSachPhongThiLocal.map((p) => (
-                <tr key={p.id} style={{ height: '60px', borderBottom: '1px solid var(--border-subtle)', backgroundColor: danhSachPhongDaChon.includes(p.id) ? 'var(--primary-subtle)' : 'transparent' }}>
-                  <td style={{ padding: '0 16px', textAlign: 'center' }}>
-                    <input
-                      type="checkbox"
-                      checked={danhSachPhongDaChon.includes(p.id)}
-                      onChange={() => {
-                        if (danhSachPhongDaChon.includes(p.id)) {
-                          setDanhSachPhongDaChon(danhSachPhongDaChon.filter((id) => id !== p.id));
-                        } else {
-                          setDanhSachPhongDaChon([...danhSachPhongDaChon, p.id]);
-                        }
-                      }}
-                    />
-                  </td>
-                  <td style={{ padding: '0 16px', fontWeight: 800, color: 'var(--primary)', letterSpacing: '0.5px' }}>
-                    {chuanHoaMaPhong(p.maPhong)}
-                  </td>
-                  <td style={{ padding: '0 16px', fontWeight: 600, color: 'var(--text-primary)' }}>{p.tenPhong}</td>
-                  <td style={{ padding: '0 16px', fontSize: '13px', color: 'var(--text-secondary)' }}>{p.tenBaiKiemTra}</td>
-                  <td style={{ padding: '0 16px', fontSize: '13px', textAlign: 'center' }}>{p.thoiLuongPhut} phút</td>
-                  <td style={{ padding: '0 16px', textAlign: 'center' }}>
-                    <span
-                      className={
-                        p.trangThai === 'DANG_THI'
-                          ? 'badge badge-success'
-                          : p.trangThai === 'TAM_DUNG'
-                          ? 'badge badge-warning'
-                          : p.trangThai === 'KHOA'
-                          ? 'badge badge-danger'
-                          : p.trangThai === 'DA_KET_THUC'
-                          ? 'badge badge-neutral'
-                          : 'badge badge-primary'
-                      }
-                    >
-                      ● {p.trangThai === 'DANG_THI' ? 'Đang thi' : p.trangThai === 'TAM_DUNG' ? 'Tạm dừng' : p.trangThai === 'KHOA' ? 'Đã khóa' : p.trangThai === 'DA_KET_THUC' ? 'Đã kết thúc' : 'Chờ bắt đầu'}
-                    </span>
-                  </td>
-                  <td style={{ padding: '0 16px', textAlign: 'right' }}>
-                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', alignItems: 'center' }}>
-                      <button
-                        type="button"
-                        className="btn-primary"
-                        style={{ padding: '6px 12px', fontSize: '12.5px' }}
-                        onClick={() => onChuyenToiGiamSat(p.id)}
-                      >
-                        Giám sát
-                      </button>
-
-                      {/* Các nút điều khiển trạng thái phòng */}
-                      {p.trangThai === 'CHO_BAT_DAU' && (
-                        <>
-                          <button
-                            type="button"
-                            className="btn-secondary"
-                            title="Bắt đầu thi"
-                            style={{ padding: '6px 10px', fontSize: '12px', color: 'var(--success)', borderColor: 'var(--success-light)' }}
-                            onClick={() => xuLyDoiTrangThaiPhong(p.id, 'DANG_THI')}
-                          >
-                            <Play size={14} /> Bắt đầu
-                          </button>
-                          <button
-                            type="button"
-                            className="btn-secondary"
-                            title="Khóa phòng"
-                            style={{ padding: '6px 8px', fontSize: '12px', color: 'var(--danger)' }}
-                            onClick={() => xuLyDoiTrangThaiPhong(p.id, 'KHOA')}
-                          >
-                            <Lock size={14} />
-                          </button>
-                        </>
-                      )}
-
-                      {p.trangThai === 'DANG_THI' && (
-                        <>
-                          <button
-                            type="button"
-                            className="btn-secondary"
-                            title="Tạm dừng"
-                            style={{ padding: '6px 8px', fontSize: '12px', color: 'var(--warning)' }}
-                            onClick={() => xuLyDoiTrangThaiPhong(p.id, 'TAM_DUNG')}
-                          >
-                            <Pause size={14} />
-                          </button>
-                          <button
-                            type="button"
-                            className="btn-secondary"
-                            title="Kết thúc thi"
-                            style={{ padding: '6px 8px', fontSize: '12px', color: 'var(--text-secondary)' }}
-                            onClick={() => xuLyDoiTrangThaiPhong(p.id, 'DA_KET_THUC')}
-                          >
-                            <Square size={14} />
-                          </button>
-                        </>
-                      )}
-
-                      {p.trangThai === 'TAM_DUNG' && (
-                        <>
-                          <button
-                            type="button"
-                            className="btn-secondary"
-                            title="Tiếp tục thi"
-                            style={{ padding: '6px 10px', fontSize: '12px', color: 'var(--success)' }}
-                            onClick={() => xuLyDoiTrangThaiPhong(p.id, 'DANG_THI')}
-                          >
-                            <Play size={14} /> Tiếp tục
-                          </button>
-                          <button
-                            type="button"
-                            className="btn-secondary"
-                            title="Kết thúc thi"
-                            style={{ padding: '6px 8px', fontSize: '12px' }}
-                            onClick={() => xuLyDoiTrangThaiPhong(p.id, 'DA_KET_THUC')}
-                          >
-                            <Square size={14} />
-                          </button>
-                        </>
-                      )}
-
-                      {p.trangThai === 'KHOA' && (
-                        <button
-                          type="button"
-                          className="btn-secondary"
-                          title="Mở phòng"
-                          style={{ padding: '6px 10px', fontSize: '12px', color: 'var(--primary)' }}
-                          onClick={() => xuLyDoiTrangThaiPhong(p.id, 'CHO_BAT_DAU')}
-                        >
-                          <Unlock size={14} /> Mở phòng
-                        </button>
-                      )}
-
-                      {p.trangThai === 'DA_KET_THUC' && (
-                        <button
-                          type="button"
-                          className="btn-secondary"
-                          title="Mở lại phòng"
-                          style={{ padding: '6px 8px', fontSize: '12px' }}
-                          onClick={() => xuLyDoiTrangThaiPhong(p.id, 'CHO_BAT_DAU')}
-                        >
-                          <RotateCcw size={14} />
-                        </button>
-                      )}
-
-                      {/* Nút Sửa Phòng */}
-                      <button
-                        type="button"
-                        className="btn-secondary"
-                        title="Chỉnh sửa phòng thi"
-                        style={{ padding: '6px 8px', fontSize: '12px' }}
-                        onClick={() => xuLyMoModalSuaPhong(p)}
-                      >
-                        <Edit size={14} />
-                      </button>
-
-                      {/* Nút Xóa Phòng */}
-                      <button
-                        type="button"
-                        className="btn-secondary"
-                        title="Xóa phòng thi"
-                        style={{ padding: '6px 8px', fontSize: '12px', color: 'var(--danger)', borderColor: 'var(--danger-light)' }}
-                        onClick={() => xuLyXoaPhong(p.id)}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+              {danhSachPhongDaLoc.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-tertiary)', fontSize: '14px' }}>
+                    Không tìm thấy phòng thi nào phù hợp với bộ lọc.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                danhSachPhongDaLoc.map((p) => (
+                  <tr key={p.id} style={{ height: '60px', borderBottom: '1px solid var(--border-subtle)', backgroundColor: danhSachPhongDaChon.includes(p.id) ? 'var(--primary-subtle)' : 'transparent' }}>
+                    <td style={{ padding: '0 16px', textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={danhSachPhongDaChon.includes(p.id)}
+                        onChange={() => {
+                          if (danhSachPhongDaChon.includes(p.id)) {
+                            setDanhSachPhongDaChon(danhSachPhongDaChon.filter((id) => id !== p.id));
+                          } else {
+                            setDanhSachPhongDaChon([...danhSachPhongDaChon, p.id]);
+                          }
+                        }}
+                      />
+                    </td>
+                    <td style={{ padding: '0 16px', fontWeight: 800, color: 'var(--primary)', letterSpacing: '0.5px' }}>
+                      {chuanHoaMaPhong(p.maPhong)}
+                    </td>
+                    <td style={{ padding: '0 16px', fontWeight: 600, color: 'var(--text-primary)' }}>{p.tenPhong}</td>
+                    <td style={{ padding: '0 16px', fontSize: '13px', color: 'var(--text-secondary)' }}>{p.tenBaiKiemTra}</td>
+                    <td style={{ padding: '0 16px', fontSize: '13px', textAlign: 'center' }}>{p.thoiLuongPhut} phút</td>
+                    <td style={{ padding: '0 16px', textAlign: 'center' }}>
+                      <span
+                        className={
+                          p.trangThai === 'DANG_THI'
+                            ? 'badge badge-success'
+                            : p.trangThai === 'TAM_DUNG'
+                            ? 'badge badge-warning'
+                            : p.trangThai === 'KHOA'
+                            ? 'badge badge-danger'
+                            : p.trangThai === 'DA_KET_THUC'
+                            ? 'badge badge-neutral'
+                            : 'badge badge-primary'
+                        }
+                      >
+                        ● {p.trangThai === 'DANG_THI' ? 'Đang thi' : p.trangThai === 'TAM_DUNG' ? 'Tạm dừng' : p.trangThai === 'KHOA' ? 'Đã khóa' : p.trangThai === 'DA_KET_THUC' ? 'Đã kết thúc' : 'Chờ bắt đầu'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '0 16px', textAlign: 'right', position: 'relative' }}>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                        {/* Nút Giám sát / Phòng chờ riêng */}
+                        <button
+                          type="button"
+                          className={p.trangThai === 'CHO_BAT_DAU' ? 'btn-secondary' : 'btn-primary'}
+                          style={{
+                            padding: '6px 14px',
+                            fontSize: '12.5px',
+                            fontWeight: 700,
+                            color: p.trangThai === 'CHO_BAT_DAU' ? 'var(--warning)' : undefined,
+                            borderColor: p.trangThai === 'CHO_BAT_DAU' ? 'var(--warning-light)' : undefined
+                          }}
+                          onClick={() => {
+                            if (p.trangThai === 'CHO_BAT_DAU' && onChuyenToiPhongCho) {
+                              onChuyenToiPhongCho(p.id);
+                            } else {
+                              onChuyenToiGiamSat(p.id);
+                            }
+                          }}
+                        >
+                          {p.trangThai === 'CHO_BAT_DAU' ? 'Phòng chờ' : 'Giám sát'}
+                        </button>
+
+                        {/* Nút 3 chấm menu (...) */}
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          title="Tùy chọn thao tác"
+                          style={{
+                            padding: '6px 8px',
+                            fontSize: '12px',
+                            backgroundColor: openMenuPhongId === p.id ? 'var(--primary-light)' : undefined,
+                            borderColor: openMenuPhongId === p.id ? 'var(--primary)' : undefined
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuPhongId(openMenuPhongId === p.id ? null : p.id);
+                          }}
+                        >
+                          <MoreVertical size={16} />
+                        </button>
+
+                        {/* Dropdown Menu Tùy Chọn */}
+                        {openMenuPhongId === p.id && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              right: '16px',
+                              top: '48px',
+                              zIndex: 100,
+                              backgroundColor: 'var(--bg-surface)',
+                              border: '1px solid var(--border-color)',
+                              borderRadius: '12px',
+                              boxShadow: '0 10px 25px rgba(0,0,0,0.18)',
+                              minWidth: '190px',
+                              padding: '6px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '3px',
+                              textAlign: 'left'
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {/* Option 1: Toggle Mở / Khóa phòng */}
+                            {p.trangThai === 'KHOA' ? (
+                              <button
+                                type="button"
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  padding: '8px 12px',
+                                  fontSize: '13px',
+                                  fontWeight: 600,
+                                  color: 'var(--primary)',
+                                  backgroundColor: 'transparent',
+                                  border: 'none',
+                                  borderRadius: '8px',
+                                  cursor: 'pointer',
+                                  width: '100%',
+                                  textAlign: 'left'
+                                }}
+                                onClick={() => {
+                                  xuLyDoiTrangThaiPhong(p.id, 'CHO_BAT_DAU');
+                                  setOpenMenuPhongId(null);
+                                }}
+                              >
+                                <Unlock size={14} color="var(--primary)" /> Mở phòng thi
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  padding: '8px 12px',
+                                  fontSize: '13px',
+                                  fontWeight: 600,
+                                  color: 'var(--danger)',
+                                  backgroundColor: 'transparent',
+                                  border: 'none',
+                                  borderRadius: '8px',
+                                  cursor: 'pointer',
+                                  width: '100%',
+                                  textAlign: 'left'
+                                }}
+                                onClick={() => {
+                                  xuLyDoiTrangThaiPhong(p.id, 'KHOA');
+                                  setOpenMenuPhongId(null);
+                                }}
+                              >
+                                <Lock size={14} color="var(--danger)" /> Khóa phòng thi
+                              </button>
+                            )}
+
+                            {/* Option 2: Dynamic Bắt đầu / Tạm dừng / Tiếp tục */}
+                            {p.trangThai === 'CHO_BAT_DAU' && (
+                              <button
+                                type="button"
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  padding: '8px 12px',
+                                  fontSize: '13px',
+                                  fontWeight: 600,
+                                  color: 'var(--success)',
+                                  backgroundColor: 'transparent',
+                                  border: 'none',
+                                  borderRadius: '8px',
+                                  cursor: 'pointer',
+                                  width: '100%',
+                                  textAlign: 'left'
+                                }}
+                                onClick={() => {
+                                  xuLyDoiTrangThaiPhong(p.id, 'DANG_THI');
+                                  setOpenMenuPhongId(null);
+                                }}
+                              >
+                                <Play size={14} color="var(--success)" /> Bắt đầu thi
+                              </button>
+                            )}
+
+                            {p.trangThai === 'DANG_THI' && (
+                              <button
+                                type="button"
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  padding: '8px 12px',
+                                  fontSize: '13px',
+                                  fontWeight: 600,
+                                  color: 'var(--warning)',
+                                  backgroundColor: 'transparent',
+                                  border: 'none',
+                                  borderRadius: '8px',
+                                  cursor: 'pointer',
+                                  width: '100%',
+                                  textAlign: 'left'
+                                }}
+                                onClick={() => {
+                                  xuLyDoiTrangThaiPhong(p.id, 'TAM_DUNG');
+                                  setOpenMenuPhongId(null);
+                                }}
+                              >
+                                <Pause size={14} color="var(--warning)" /> Tạm dừng thi
+                              </button>
+                            )}
+
+                            {p.trangThai === 'TAM_DUNG' && (
+                              <button
+                                type="button"
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  padding: '8px 12px',
+                                  fontSize: '13px',
+                                  fontWeight: 600,
+                                  color: 'var(--success)',
+                                  backgroundColor: 'transparent',
+                                  border: 'none',
+                                  borderRadius: '8px',
+                                  cursor: 'pointer',
+                                  width: '100%',
+                                  textAlign: 'left'
+                                }}
+                                onClick={() => {
+                                  xuLyDoiTrangThaiPhong(p.id, 'DANG_THI');
+                                  setOpenMenuPhongId(null);
+                                }}
+                              >
+                                <Play size={14} color="var(--success)" /> Tiếp tục thi
+                              </button>
+                            )}
+
+                            {/* Option 3: Kết thúc thi / Mở lại */}
+                            {(p.trangThai === 'DANG_THI' || p.trangThai === 'TAM_DUNG') && (
+                              <button
+                                type="button"
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  padding: '8px 12px',
+                                  fontSize: '13px',
+                                  fontWeight: 600,
+                                  color: 'var(--text-secondary)',
+                                  backgroundColor: 'transparent',
+                                  border: 'none',
+                                  borderRadius: '8px',
+                                  cursor: 'pointer',
+                                  width: '100%',
+                                  textAlign: 'left'
+                                }}
+                                onClick={() => {
+                                  xuLyDoiTrangThaiPhong(p.id, 'DA_KET_THUC');
+                                  setOpenMenuPhongId(null);
+                                }}
+                              >
+                                <Square size={14} color="var(--text-secondary)" /> Kết thúc thi
+                              </button>
+                            )}
+
+                            {p.trangThai === 'DA_KET_THUC' && (
+                              <button
+                                type="button"
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  padding: '8px 12px',
+                                  fontSize: '13px',
+                                  fontWeight: 600,
+                                  color: 'var(--primary)',
+                                  backgroundColor: 'transparent',
+                                  border: 'none',
+                                  borderRadius: '8px',
+                                  cursor: 'pointer',
+                                  width: '100%',
+                                  textAlign: 'left'
+                                }}
+                                onClick={() => {
+                                  xuLyDoiTrangThaiPhong(p.id, 'CHO_BAT_DAU');
+                                  setOpenMenuPhongId(null);
+                                }}
+                              >
+                                <RotateCcw size={14} color="var(--primary)" /> Mở lại phòng
+                              </button>
+                            )}
+
+                            <div style={{ height: '1px', backgroundColor: 'var(--border-subtle)', margin: '3px 0' }} />
+
+                            {/* Option 4: Sửa phòng */}
+                            <button
+                              type="button"
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '8px 12px',
+                                fontSize: '13px',
+                                fontWeight: 600,
+                                color: 'var(--text-primary)',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                width: '100%',
+                                textAlign: 'left'
+                              }}
+                              onClick={() => {
+                                xuLyMoModalSuaPhong(p);
+                                setOpenMenuPhongId(null);
+                              }}
+                            >
+                              <Edit size={14} color="var(--text-primary)" /> Chỉnh sửa
+                            </button>
+
+                            {/* Option 5: Xóa phòng */}
+                            <button
+                              type="button"
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '8px 12px',
+                                fontSize: '13px',
+                                fontWeight: 600,
+                                color: 'var(--danger)',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                width: '100%',
+                                textAlign: 'left'
+                              }}
+                              onClick={() => {
+                                xuLyXoaPhong(p.id);
+                                setOpenMenuPhongId(null);
+                              }}
+                            >
+                              <Trash2 size={14} color="var(--danger)" /> Xóa phòng
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -1272,7 +1633,7 @@ export const QuanLyThiCu: React.FC<QuanLyThiCuProps> = ({
                           textAlign: 'center'
                         }}
                       >
-                        📝 Sử dụng 1 Đề thi chung
+                        Sử dụng 1 Đề thi chung
                       </button>
                       <button
                         type="button"
@@ -1289,7 +1650,7 @@ export const QuanLyThiCu: React.FC<QuanLyThiCuProps> = ({
                           textAlign: 'center'
                         }}
                       >
-                        📄📄 Sử dụng 2 Đề thi (Đề Chẵn / Lẻ)
+                        Sử dụng 2 Đề thi (Đề Chẵn / Lẻ)
                       </button>
                     </div>
                   </div>
@@ -1380,7 +1741,7 @@ export const QuanLyThiCu: React.FC<QuanLyThiCuProps> = ({
                         checked={tronCauHoiPhong}
                         onChange={(e) => setTronCauHoiPhong(e.target.checked)}
                       />
-                      🔀 Đảo thứ tự câu hỏi ngẫu nhiên (Trộn đề thi)
+                      Đảo thứ tự câu hỏi ngẫu nhiên (Trộn đề thi)
                     </label>
 
                     <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
@@ -1389,7 +1750,7 @@ export const QuanLyThiCu: React.FC<QuanLyThiCuProps> = ({
                         checked={tronDapAnPhong}
                         onChange={(e) => setTronDapAnPhong(e.target.checked)}
                       />
-                      🔤 Đảo vị trí các đáp án (A, B, C, D) ngẫu nhiên
+                      Đảo vị trí các đáp án (A, B, C, D) ngẫu nhiên
                     </label>
 
                     {danhSachBaiKiemTra.find((b) => b.id === baiKiemTraChonId)?.loai !== 'TU_LUAN' ? (
@@ -1399,13 +1760,39 @@ export const QuanLyThiCu: React.FC<QuanLyThiCuProps> = ({
                           checked={choXemDiemPhong}
                           onChange={(e) => setChoXemDiemPhong(e.target.checked)}
                         />
-                        👁️ Cho phép sinh viên xem điểm thi ngay sau khi nộp bài (Trắc nghiệm)
+                        Cho phép sinh viên xem điểm thi ngay sau khi nộp bài (Trắc nghiệm)
                       </label>
                     ) : (
                       <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                        ℹ️ Đề thi tự luận cần giảng viên chấm điểm thủ công, tùy chọn xem điểm tức thì không khả dụng.
+                        Thông tin: Đề thi tự luận cần giảng viên chấm điểm thủ công.
                       </div>
                     )}
+
+                    <div style={{ marginTop: '8px', paddingTop: '10px', borderTop: '1px solid var(--border-subtle)' }}>
+                      <label style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)', display: 'block', marginBottom: '8px' }}>
+                        🔒 Cơ chế phê duyệt sinh viên vào phòng thi:
+                      </label>
+                      <div style={{ display: 'flex', gap: '20px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 700 }}>
+                          <input
+                            type="radio"
+                            name="cheDoDuyetPhong"
+                            checked={cheDoDuyetPhong === 'TU_DONG'}
+                            onChange={() => setCheDoDuyetPhong('TU_DONG')}
+                          />
+                          ⚡ Tự động duyệt vào làm bài
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 700 }}>
+                          <input
+                            type="radio"
+                            name="cheDoDuyetPhong"
+                            checked={cheDoDuyetPhong === 'THU_CONG'}
+                            onChange={() => setCheDoDuyetPhong('THU_CONG')}
+                          />
+                          🔒 Duyệt thủ công (Giảng viên phê duyệt)
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

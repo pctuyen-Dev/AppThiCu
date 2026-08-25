@@ -74,6 +74,7 @@ export type TrangThaiPhongThi = 'CHO_BAT_DAU' | 'DANG_THI' | 'TAM_DUNG' | 'KHOA'
 export type TrangThaiKetNoi = 'ONLINE' | 'OFFLINE' | 'DISCONNECTED';
 
 export type TrangThaiLamBaiSinhVien = 'CHUA_VAO' | 'DANG_LAM' | 'DA_NOP' | 'MAT_KET_NOI';
+export type TrangThaiDuyetSinhVien = 'CHO_DUYET' | 'DA_DUYET' | 'TU_CHOI';
 
 export interface SinhVienPhongThi {
   maSinhVien: string;
@@ -82,6 +83,7 @@ export interface SinhVienPhongThi {
   khoa: string;
   trangThaiKetNoi: TrangThaiKetNoi;
   trangThaiLamBai: TrangThaiLamBaiSinhVien;
+  trangThaiDuyet?: TrangThaiDuyetSinhVien;
   soCauDaLam: number;
   tongSoCau: number;
   thoiGianConLaiSeconds: number;
@@ -114,6 +116,8 @@ export interface PhongThi {
   tronDapAn?: boolean;
   choXemDiem?: boolean;
   phamViThi?: 'LAN' | 'INTERNET';
+  cheDoDuyet?: 'TU_DONG' | 'THU_CONG';
+  danhSachMsvDuocPhep?: string[];
 }
 
 export interface BaiNopSinhVien {
@@ -136,6 +140,12 @@ export interface BaiNopSinhVien {
   diemSo?: number;
   nhanXetGiangVien?: string;
   trangThaiCham: 'CHUA_CHAM' | 'DA_CHAM';
+  tinhTrangNop?: {
+    loai: 'DUNG_GIO' | 'SOM' | 'MUON';
+    moTa: string;
+  };
+  soLanViPham?: number;
+  chiTietViPham?: string;
 }
 
 export interface FileHệThong {

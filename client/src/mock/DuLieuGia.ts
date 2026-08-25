@@ -288,7 +288,10 @@ export const danhSachBaiNopGia: BaiNopSinhVien[] = [
     cauTraLoiTracNghiem: { 'q-1': 0, 'q-2': 1, 'q-3': 2, 'q-4': 3 },
     diemSo: 9.25,
     nhanXetGiangVien: 'Bài làm rất xuất sắc, nắm chắc cú pháp SQL.',
-    trangThaiCham: 'DA_CHAM'
+    trangThaiCham: 'DA_CHAM',
+    tinhTrangNop: { loai: 'SOM', moTa: 'Nộp sớm 15 phút' },
+    soLanViPham: 0,
+    chiTietViPham: 'Không vi phạm'
   },
   {
     id: 'sub-02',
@@ -304,7 +307,10 @@ export const danhSachBaiNopGia: BaiNopSinhVien[] = [
     cauTraLoiTracNghiem: { 'q-1': 0, 'q-2': 0, 'q-3': 1 },
     diemSo: 7.75,
     nhanXetGiangVien: 'Cần chú ý hơn ở các câu lệnh JOIN và Group By.',
-    trangThaiCham: 'DA_CHAM'
+    trangThaiCham: 'DA_CHAM',
+    tinhTrangNop: { loai: 'DUNG_GIO', moTa: 'Nộp đúng giờ' },
+    soLanViPham: 1,
+    chiTietViPham: '1 lần (Mất khuôn mặt 20s)'
   },
   {
     id: 'sub-03',
@@ -322,7 +328,10 @@ export const danhSachBaiNopGia: BaiNopSinhVien[] = [
       kichThuoc: '18.4 MB',
       duongDan: '#'
     },
-    trangThaiCham: 'CHUA_CHAM'
+    trangThaiCham: 'CHUA_CHAM',
+    tinhTrangNop: { loai: 'MUON', moTa: 'Nộp muộn 4 phút' },
+    soLanViPham: 2,
+    chiTietViPham: '2 lần (Chuyển tab 3 lần)'
   },
   {
     id: 'sub-04',
@@ -337,7 +346,10 @@ export const danhSachBaiNopGia: BaiNopSinhVien[] = [
     ngayNop: '2026-08-23 14:55:00',
     diemSo: 8.5,
     nhanXetGiangVien: 'Hiểu rõ mô hình OSI và giao thức TCP/IP.',
-    trangThaiCham: 'DA_CHAM'
+    trangThaiCham: 'DA_CHAM',
+    tinhTrangNop: { loai: 'SOM', moTa: 'Nộp sớm 8 phút' },
+    soLanViPham: 0,
+    chiTietViPham: 'Không vi phạm'
   }
 ];
 

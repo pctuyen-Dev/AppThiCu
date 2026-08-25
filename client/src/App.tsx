@@ -32,6 +32,7 @@ import { QuanLyHeThong } from './components/Admin/QuanLyHeThong';
 // Teacher Components
 import { TongQuanGiangVien } from './components/GiangVien/TongQuanGiangVien';
 import { QuanLyThiCu } from './components/GiangVien/QuanLyThiCu';
+import { PhongChoGiangVien } from './components/GiangVien/PhongChoGiangVien';
 import { ManHinhGiamSat } from './components/GiangVien/ManHinhGiamSat';
 import { ChamBai } from './components/GiangVien/ChamBai';
 
@@ -249,6 +250,10 @@ export function App() {
                 setPhongThiDangChonId(id);
                 setManHinhHienTai('teacher-monitoring');
               }}
+              onChuyenToiPhongCho={(id) => {
+                setPhongThiDangChonId(id);
+                setManHinhHienTai('teacher-waiting-room');
+              }}
               onHienThiToast={xuLyHienThiToast}
               tabBanDau={manHinhHienTai === 'teacher-rooms-list' ? 'PHONG_THI' : 'BAI_KIEM_TRA'}
               modeMoModalBanDau={
@@ -261,9 +266,37 @@ export function App() {
             />
           )}
 
+          {manHinhHienTai === 'teacher-waiting-room' && (
+            <PhongChoGiangVien
+              phongThi={phongThiDangXem}
+              danhSachPhongThi={danhSachPhongThi}
+              onChonPhongThi={(id) => setPhongThiDangChonId(id)}
+              onBatDauCaThi={(id) => {
+                setDanhSachPhongThi((prev) =>
+                  prev.map((p) => (p.id === id ? { ...p, trangThai: 'DANG_THI' } : p))
+                );
+                setPhongThiDangChonId(id);
+                xuLyHienThiToast('Bắt đầu ca thi', 'Ca thi đã chính thức bắt đầu!', 'success');
+                setManHinhHienTai('teacher-monitoring');
+              }}
+              onChuyenToiGiamSat={(id) => {
+                setPhongThiDangChonId(id);
+                setManHinhHienTai('teacher-monitoring');
+              }}
+              onHienThiToast={xuLyHienThiToast}
+              onQuayLai={() => setManHinhHienTai('teacher-dashboard')}
+            />
+          )}
+
           {manHinhHienTai === 'teacher-monitoring' && (
             <ManHinhGiamSat
               phongThi={phongThiDangXem}
+              danhSachPhongThi={danhSachPhongThi}
+              onChonPhongThi={(id) => setPhongThiDangChonId(id)}
+              onChuyenToiPhongCho={(id) => {
+                setPhongThiDangChonId(id);
+                setManHinhHienTai('teacher-waiting-room');
+              }}
               onQuayLai={() => setManHinhHienTai('teacher-dashboard')}
               onKetThucPhong={() => {
                 setDanhSachPhongThi((prev) =>
@@ -276,8 +309,18 @@ export function App() {
             />
           )}
 
-          {manHinhHienTai === 'teacher-grading' && (
-            <ChamBai danhSachBaiNop={danhSachBaiNop} onHienThiToast={xuLyHienThiToast} />
+          {manHinhHienTai.startsWith('teacher-grading') && (
+            <ChamBai
+              danhSachBaiNop={danhSachBaiNop}
+              onHienThiToast={xuLyHienThiToast}
+              tabBanDau={
+                manHinhHienTai === 'teacher-grading-archive'
+                  ? 'KHO_BAI_NOP'
+                  : manHinhHienTai === 'teacher-grading-appeals'
+                  ? 'PHUC_KHAO'
+                  : 'CHAM_DIEM'
+              }
+            />
           )}
 
           {manHinhHienTai === 'teacher-results' && (
