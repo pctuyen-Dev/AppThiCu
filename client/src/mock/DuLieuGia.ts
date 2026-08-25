@@ -283,15 +283,21 @@ export const danhSachBaiNopGia: BaiNopSinhVien[] = [
     lop: 'DHTI15A1HN',
     monHoc: 'Cơ sở dữ liệu',
     tenBaiKiemTra: 'Kiểm Tra Giữa Kỳ - Cơ Sở Dữ Liệu SQL',
-    loaiBaiThi: 'TRAC_NGHIEM',
+    loaiBaiThi: 'TU_LUAN',
     ngayNop: '2026-08-24 20:25:12',
     cauTraLoiTracNghiem: { 'q-1': 0, 'q-2': 1, 'q-3': 2, 'q-4': 3 },
+    fileTuLuanNop: {
+      tenFile: 'BaiLam_21103100124_DoThiThuThao.zip',
+      kichThuoc: '3.5 MB',
+      duongDan: '#'
+    },
     diemSo: 9.25,
     nhanXetGiangVien: 'Bài làm rất xuất sắc, nắm chắc cú pháp SQL.',
     trangThaiCham: 'DA_CHAM',
-    tinhTrangNop: { loai: 'SOM', moTa: 'Nộp sớm 15 phút' },
+    tinhTrangNop: { loai: 'SOM', moTa: 'Nộp sớm', soPhut: 15, thoiGianChiTiet: '15 phút 20 giây' },
     soLanViPham: 0,
-    chiTietViPham: 'Không vi phạm'
+    chiTietViPham: 'Không có vi phạm',
+    nhatKyViPhamChiTiet: []
   },
   {
     id: 'sub-02',
@@ -302,15 +308,23 @@ export const danhSachBaiNopGia: BaiNopSinhVien[] = [
     lop: 'DHTI15A1HN',
     monHoc: 'Cơ sở dữ liệu',
     tenBaiKiemTra: 'Kiểm Tra Giữa Kỳ - Cơ Sở Dữ Liệu SQL',
-    loaiBaiThi: 'TRAC_NGHIEM',
+    loaiBaiThi: 'TU_LUAN',
     ngayNop: '2026-08-24 20:30:45',
     cauTraLoiTracNghiem: { 'q-1': 0, 'q-2': 0, 'q-3': 1 },
+    fileTuLuanNop: {
+      tenFile: 'BaiLam_21103100125_LeHoangAnh.zip',
+      kichThuoc: '3.5 MB',
+      duongDan: '#'
+    },
     diemSo: 7.75,
     nhanXetGiangVien: 'Cần chú ý hơn ở các câu lệnh JOIN và Group By.',
     trangThaiCham: 'DA_CHAM',
-    tinhTrangNop: { loai: 'DUNG_GIO', moTa: 'Nộp đúng giờ' },
+    tinhTrangNop: { loai: 'DUNG_GIO', moTa: 'Nộp đúng giờ', soPhut: 0, thoiGianChiTiet: '00 phút 45 giây' },
     soLanViPham: 1,
-    chiTietViPham: '1 lần (Mất khuôn mặt 20s)'
+    chiTietViPham: '1 lần vi phạm',
+    nhatKyViPhamChiTiet: [
+      { id: 'v-1', thoiGian: '20:14:10', noiDung: 'Mất kết nối camera / không thấy khuôn mặt (20s)', loai: 'MAT_KHUON_MAT' }
+    ]
   },
   {
     id: 'sub-03',
@@ -329,9 +343,13 @@ export const danhSachBaiNopGia: BaiNopSinhVien[] = [
       duongDan: '#'
     },
     trangThaiCham: 'CHUA_CHAM',
-    tinhTrangNop: { loai: 'MUON', moTa: 'Nộp muộn 4 phút' },
+    tinhTrangNop: { loai: 'MUON', moTa: 'Nộp muộn', soPhut: 4, thoiGianChiTiet: '04 phút 12 giây' },
     soLanViPham: 2,
-    chiTietViPham: '2 lần (Chuyển tab 3 lần)'
+    chiTietViPham: '2 lần vi phạm',
+    nhatKyViPhamChiTiet: [
+      { id: 'v-2', thoiGian: '20:10:05', noiDung: 'Rời khỏi cửa sổ làm bài / Alt+Tab (Lần 1)', loai: 'CHUYEN_TAB' },
+      { id: 'v-3', thoiGian: '20:22:18', noiDung: 'Phát hiện thêm 1 khuôn mặt khác trong khung hình', loai: 'NHIEU_NGUOI' }
+    ]
   },
   {
     id: 'sub-04',
@@ -342,14 +360,45 @@ export const danhSachBaiNopGia: BaiNopSinhVien[] = [
     lop: 'DHTI15A3HN',
     monHoc: 'Mạng máy tính',
     tenBaiKiemTra: 'Kiểm Tra Thường Xuyên - Mạng Máy Tính & LAN/WiFi',
-    loaiBaiThi: 'TRAC_NGHIEM',
+    loaiBaiThi: 'TU_LUAN',
     ngayNop: '2026-08-23 14:55:00',
+    fileTuLuanNop: {
+      tenFile: 'BaiLam_21103100201.zip',
+      kichThuoc: '3.5 MB',
+      duongDan: '#'
+    },
     diemSo: 8.5,
     nhanXetGiangVien: 'Hiểu rõ mô hình OSI và giao thức TCP/IP.',
     trangThaiCham: 'DA_CHAM',
-    tinhTrangNop: { loai: 'SOM', moTa: 'Nộp sớm 8 phút' },
+    tinhTrangNop: { loai: 'SOM', moTa: 'Nộp sớm', soPhut: 8, thoiGianChiTiet: '08 phút 15 giây' },
     soLanViPham: 0,
-    chiTietViPham: 'Không vi phạm'
+    chiTietViPham: 'Không có vi phạm',
+    nhatKyViPhamChiTiet: []
+  },
+  {
+    id: 'sub-05',
+    phongThiId: 'room-101',
+    maPhong: 'A102',
+    maSinhVien: '21103100208',
+    hoTenSinhVien: 'Nguyễn Văn Tiến',
+    lop: 'DHTI15A1HN',
+    monHoc: 'Cơ sở dữ liệu',
+    tenBaiKiemTra: 'Kiểm Tra Giữa Kỳ - Cơ Sở Dữ Liệu SQL',
+    loaiBaiThi: 'TU_LUAN',
+    ngayNop: '2026-08-24 20:38:15',
+    fileTuLuanNop: {
+      tenFile: 'BaiLam_21103100208_NguyenVanTien.rar',
+      kichThuoc: '5.6 MB',
+      duongDan: '#'
+    },
+    trangThaiCham: 'DANG_CHAM',
+    tinhTrangNop: { loai: 'MUON', moTa: 'Nộp muộn', soPhut: 8, thoiGianChiTiet: '08 phút 05 giây' },
+    soLanViPham: 2,
+    chiTietViPham: '2 lần vi phạm',
+    nhatKyViPhamChiTiet: [
+      { id: 'v-5', thoiGian: '20:15:00', noiDung: 'Quay đầu nhìn ra ngoài góc màn hình 15s', loai: 'ROI_MAN_HINH' },
+      { id: 'v-6', thoiGian: '20:30:12', noiDung: 'Mất khuôn mặt khỏi khung hình camera 30s', loai: 'MAT_KHUON_MAT' }
+    ]
   }
 ];
 

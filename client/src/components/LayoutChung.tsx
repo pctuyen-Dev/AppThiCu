@@ -7,6 +7,7 @@ import {
   FileText,
   CheckSquare,
   Award,
+  BarChart3,
   Bell,
   Sun,
   Moon,
@@ -90,7 +91,7 @@ export const LayoutChung: React.FC<LayoutChungProps> = ({
           { id: 'teacher-dashboard', ten: 'Tổng quan', icon: LayoutDashboard },
           { id: 'teacher-exams', ten: 'Thi cử', icon: FileText },
           { id: 'teacher-grading', ten: 'Chấm bài', icon: CheckSquare },
-          { id: 'teacher-results', ten: 'Kết quả', icon: Award }
+          { id: 'teacher-results', ten: 'Thống kê điểm', icon: BarChart3 }
         ];
       case 'SINH_VIEN':
         return [

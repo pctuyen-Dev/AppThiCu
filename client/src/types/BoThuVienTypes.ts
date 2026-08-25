@@ -120,6 +120,13 @@ export interface PhongThi {
   danhSachMsvDuocPhep?: string[];
 }
 
+export interface LoiViPhamChiTiet {
+  id: string;
+  thoiGian: string;
+  noiDung: string;
+  loai?: 'CHUYEN_TAB' | 'MAT_KHUON_MAT' | 'NHIEU_NGUOI' | 'ROI_MAN_HINH' | 'KHAC';
+}
+
 export interface BaiNopSinhVien {
   id: string;
   phongThiId: string;
@@ -139,13 +146,16 @@ export interface BaiNopSinhVien {
   };
   diemSo?: number;
   nhanXetGiangVien?: string;
-  trangThaiCham: 'CHUA_CHAM' | 'DA_CHAM';
+  trangThaiCham: 'CHUA_CHAM' | 'DANG_CHAM' | 'DA_CHAM';
   tinhTrangNop?: {
     loai: 'DUNG_GIO' | 'SOM' | 'MUON';
     moTa: string;
+    soPhut?: number;
+    thoiGianChiTiet?: string;
   };
   soLanViPham?: number;
   chiTietViPham?: string;
+  nhatKyViPhamChiTiet?: LoiViPhamChiTiet[];
 }
 
 export interface FileHệThong {

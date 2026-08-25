@@ -35,6 +35,7 @@ import { QuanLyThiCu } from './components/GiangVien/QuanLyThiCu';
 import { PhongChoGiangVien } from './components/GiangVien/PhongChoGiangVien';
 import { ManHinhGiamSat } from './components/GiangVien/ManHinhGiamSat';
 import { ChamBai } from './components/GiangVien/ChamBai';
+import { ThongKeDiemGiangVien } from './components/GiangVien/ThongKeDiemGiangVien';
 
 // Student Components
 import { TongQuanSinhVien } from './components/SinhVien/TongQuanSinhVien';
@@ -324,7 +325,7 @@ export function App() {
           )}
 
           {manHinhHienTai === 'teacher-results' && (
-            <KetQuaSinhVien danhSachBaiNop={danhSachBaiNop} />
+            <ThongKeDiemGiangVien danhSachBaiNop={danhSachBaiNop} />
           )}
 
           {/* STUDENT SCREENS */}
